@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chouf wach delmoni ?</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('background.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .container {
+      position: relative;
+      height: 100%;
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.4); 
+    }
+
+    h1 {
+      color: white;
+      font-size: 3em;
+      margin-bottom: 1em;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    }
+
+    .search-box {
+      position: absolute;
+      bottom: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 2em;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      width: 400px;
+    }
+
+    input {
+      padding: 0.5em;
+      width: 80%;
+      font-size: 1em;
+      margin-bottom: 1em;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 0.5em 1em;
+      font-size: 1em;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #555;
+    }
+
+    ul {
+      margin-top: 2em;
+      list-style: none;
+      padding: 0;
+      color: white;
+      max-height: 300px;
+      overflow-y: auto;
+      display: none; 
+    }
+
+    li {
+      background: rgba(255, 255, 255, 0.9);
+      margin-bottom: 1em;
+      padding: 1em;
+      border-radius: 10px;
+      color: black;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    a button {
+      background-color: #0077cc;
+    }
+
+    a button:hover {
+      background-color: #005fa3;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>This site does not host any  PDF files ! </h1>
+    <div class="search-box">
+      <h2>Company pdf name search</h2>
+      <input type="text" id="query" placeholder="Name of company or CNSS number">
+      <br>
+      <button onclick="search()">Search</button>
+      <div id="loading" style="display: none; margin-top: 1em; color: rgb(0, 0, 0);">⏳ Searching...</div>
+      <ul id="results">
+
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    async function search() {
+      const query = document.getElementById("query").value.trim();
+      const loading = document.getElementById("loading");
+      const list = document.getElementById("results");
+  
+      list.innerHTML = "";
+      list.style.display = "none";
+      loading.style.display = "block"; 
+  
+      if (!query) {
+        loading.style.display = "none";
+        list.innerHTML = "<li>Please enter a search term.</li>";
+        list.style.display = "block";
+        return;
+      }
+  
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/search?query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          data.forEach(item => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+              ${item.name}
+              <a href="${item.download_link}" target="_blank">
+                <button>Download</button>
+              </a>
+            `;
+            list.appendChild(li);
+          });
+        } else if (data.error) {
+          list.innerHTML = `<li style="color: red;">Error: ${data.error}</li>`;
+        } else {
+          list.innerHTML = "<li>No matches found.</li>";
+        }
+  
+      } catch (error) {
+        list.innerHTML = `<li style="color: red;">Error: ${error.message}</li>`;
+      } finally {
+        loading.style.display = "none";
+        list.style.display = "block";  
+      }
+    }
+  </script>
+  
+  
+
+</body>
+</html>
